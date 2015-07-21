@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bechtle.FillablePdfDestination", "Bechtle.FillablePdfDestination\Bechtle.FillablePdfDestination.csproj", "{F952528B-DCA7-403E-9E60-D634C40AC873}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "FillablePdfDestination_Setup", "FillablePdfDestination_Setup\FillablePdfDestination_Setup.vdproj", "{CAF0B36B-DCFD-419C-AE59-6C4706D37B75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Komponenten_Tests", "Komponenten_Tests\Komponenten_Tests.csproj", "{E8593724-BE48-465E-85A2-1AE2A9FF3192}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F952528B-DCA7-403E-9E60-D634C40AC873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F952528B-DCA7-403E-9E60-D634C40AC873}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F952528B-DCA7-403E-9E60-D634C40AC873}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F952528B-DCA7-403E-9E60-D634C40AC873}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAF0B36B-DCFD-419C-AE59-6C4706D37B75}.Debug|Any CPU.ActiveCfg = Debug
+		{CAF0B36B-DCFD-419C-AE59-6C4706D37B75}.Debug|Any CPU.Build.0 = Debug
+		{CAF0B36B-DCFD-419C-AE59-6C4706D37B75}.Release|Any CPU.ActiveCfg = Release
+		{E8593724-BE48-465E-85A2-1AE2A9FF3192}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8593724-BE48-465E-85A2-1AE2A9FF3192}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8593724-BE48-465E-85A2-1AE2A9FF3192}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8593724-BE48-465E-85A2-1AE2A9FF3192}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
