@@ -51,7 +51,7 @@
             this.pnlDgv.Controls.Add(this.dataGridView1);
             this.pnlDgv.Location = new System.Drawing.Point(13, 22);
             this.pnlDgv.Name = "pnlDgv";
-            this.pnlDgv.Size = new System.Drawing.Size(557, 208);
+            this.pnlDgv.Size = new System.Drawing.Size(557, 209);
             this.pnlDgv.TabIndex = 0;
             // 
             // dataGridView1
@@ -63,7 +63,7 @@
             this.dataGridView1.Location = new System.Drawing.Point(0, 0);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.dataGridView1.Size = new System.Drawing.Size(557, 208);
+            this.dataGridView1.Size = new System.Drawing.Size(557, 209);
             this.dataGridView1.StandardTab = true;
             this.dataGridView1.TabIndex = 0;
             // 
