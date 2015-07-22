@@ -72,6 +72,12 @@
       <DependentUpon>FillablePdfDestinationUIForm.cs</DependentUpon>
     </Compile>
     <Compile Include="InputColumnInfo.cs" />
+    <Compile Include="NameBuilderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NameBuilderForm.Designer.cs">
+      <DependentUpon>NameBuilderForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +88,11 @@
     <EmbeddedResource Include="FillablePdfDestinationUIForm.resx">
       <DependentUpon>FillablePdfDestinationUIForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="NameBuilderForm.resx">
+      <DependentUpon>NameBuilderForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="pdfforge.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

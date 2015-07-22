@@ -35,6 +35,11 @@ namespace Bechtle.FillablePdfDestination
         private string folderPath;
 
         /// <summary>
+        /// The format string.
+        /// </summary>
+        private string formatString;
+
+        /// <summary>
         /// The template path.
         /// </summary>
         private string templatePath;
@@ -61,7 +66,6 @@ namespace Bechtle.FillablePdfDestination
         /// </returns>
         public static ComponentConfiguration CreateFromJson(string jsonString)
         {
-
             if (!string.IsNullOrEmpty(jsonString) && !string.IsNullOrWhiteSpace(jsonString))
             {
                 try
@@ -128,10 +132,10 @@ namespace Bechtle.FillablePdfDestination
             /// The column Name.
             /// </param>
             public FieldDataSet(
-                string fieldName,
-                int fieldTypeId,
-                string fieldTypeName,
-                string mappedColumnIdentificationString,
+                string fieldName, 
+                int fieldTypeId, 
+                string fieldTypeName, 
+                string mappedColumnIdentificationString, 
                 string columnName)
             {
                 this.fieldName = fieldName;
@@ -141,6 +145,17 @@ namespace Bechtle.FillablePdfDestination
                 this.columnName = columnName;
             }
 
+            /// <summary>
+            /// The to string.
+            /// </summary>
+            /// <returns>
+            /// The <see cref="string"/>.
+            /// </returns>
+            public override string ToString()
+            {
+                return this.FieldName + " : " + this.FieldTypeId + " : " + this.FieldTypeName + " : " + this.ColumnName
+                       + " : " + this.MappedColumnIdentificationString;
+            }
 
             /// <summary>
             /// Gets or sets the field name.
@@ -221,16 +236,6 @@ namespace Bechtle.FillablePdfDestination
                     this.columnName = value;
                 }
             }
-
-            public override string ToString()
-            {
-                return 
-                    this.FieldName + " : " + 
-                    this.FieldTypeId + " : "  + 
-                    this.FieldTypeName + " : " +
-                    this.ColumnName + " : " + 
-                    this.MappedColumnIdentificationString;
-            }
         }
 
         /// <summary>
@@ -301,6 +306,22 @@ namespace Bechtle.FillablePdfDestination
             set
             {
                 this.fieldDataSets = value;
+            }
+        }
+
+        /// <summary>
+        /// The format string.
+        /// </summary>
+        public string FormatString
+        {
+            get
+            {
+                return this.formatString;
+            }
+
+            set
+            {
+                this.formatString = value;
             }
         }
     }
