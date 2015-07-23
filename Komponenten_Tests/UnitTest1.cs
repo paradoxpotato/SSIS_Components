@@ -28,8 +28,6 @@ namespace Komponenten_Tests
             inputColumnInfos.Add(new InputColumnInfo("Floatspalte", DataType.DT_DECIMAL, 13, "ID: Floatspalte"));
 
 
-
-
             ComponentConfiguration config = new ComponentConfiguration();
             config.FieldDataSets = new List<ComponentConfiguration.FieldDataSet>();
 

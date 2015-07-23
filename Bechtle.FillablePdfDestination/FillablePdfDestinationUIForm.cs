@@ -78,13 +78,11 @@ namespace Bechtle.FillablePdfDestination
             {
                 this.btnOK.Enabled = true;
             }
-   
-
+  
             this.dataGridView1.Columns.Clear();
             DataTable fieldData = this.GetDatatable();
 
             this.dataGridView1.DataSource = fieldData;
-
             this.dataGridView1.Columns["dc_colLineageID"].Visible = false;
             this.dataGridView1.Columns["dc_ColumnName"].Visible = false;
             this.dataGridView1.Columns["dc_fieldType"].Visible = false;
@@ -97,7 +95,6 @@ namespace Bechtle.FillablePdfDestination
             }
 
             DataGridViewComboBoxColumn cbxColColumnNames = new DataGridViewComboBoxColumn();
-
             cbxColColumnNames.ReadOnly = false;
             cbxColColumnNames.Name = "dgvc_MappedColumnName";
             cbxColColumnNames.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
@@ -113,12 +110,9 @@ namespace Bechtle.FillablePdfDestination
                 comboBoxCell.Value = comboBoxCell.Items[0];
 
                 foreach (InputColumnInfo info in this.inputColumnInfos)
-                {
+                { 
                     // ToDo Überarbeiten
-                    ComponentConfiguration.FieldDataSet dataSet =
-                        this.componentConfiguration.FieldDataSets.First(
-                            fds => fds.FieldName == gridViewRow.Cells["dc_fieldName"].Value.ToString());
-
+                    ComponentConfiguration.FieldDataSet dataSet = this.componentConfiguration.FieldDataSets.First(fds => fds.FieldName == gridViewRow.Cells["dc_fieldName"].Value.ToString());
                     if (this.ColumnTypeFitsToFieldType(info.DataType, dataSet.FieldTypeId))
                     {
                         comboBoxCell.Items.Add(info.ColumnName);
@@ -216,7 +210,6 @@ namespace Bechtle.FillablePdfDestination
             return dt;
         }
 
-        
         // ToDo Update-Config überarbeiten
 
         /// <summary>
@@ -225,15 +218,15 @@ namespace Bechtle.FillablePdfDestination
         /// <returns>
         /// The <see cref="ComponentConfiguration"/>.
         /// </returns>
-        private ComponentConfiguration UpdateConfig()
+        private ComponentConfiguration UpdateConfigFromUI()
         {
             ComponentConfiguration cfg = new ComponentConfiguration()
                                              {
                                                  FieldDataSets = new List<ComponentConfiguration.FieldDataSet>(), 
                                                  FileNameFormat = new ComponentConfiguration.NameFormat(), 
-                                                 FolderPath = this.componentConfiguration.FolderPath, 
-                                                 TemplatePath = this.componentConfiguration.TemplatePath,
-                                                  FormatString = this.componentConfiguration.FormatString
+                                                 FolderPath = this.lblFolder.Text,
+                                                 TemplatePath = this.lblTemplate.Text,
+                                                 FormatString = this.lblNameBuilder.Text
                                              };
 
             foreach (DataGridViewRow dgvRow in this.dataGridView1.Rows)
@@ -281,6 +274,11 @@ namespace Bechtle.FillablePdfDestination
 
             pr.Close();
 
+            if (fieldDataSetsFromFile.Count == 0)
+            {
+                MessageBox.Show("This template doesn't contain any fillable fields");
+            }
+
             return fieldDataSetsFromFile;
         }
 
@@ -299,11 +297,11 @@ namespace Bechtle.FillablePdfDestination
 
             if (this.dialogTemplate.CheckFileExists)
             {
-                this.componentConfiguration.TemplatePath = this.dialogTemplate.FileName;
+                this.lblTemplate.Text = this.dialogTemplate.FileName;
+                this.componentConfiguration = this.UpdateConfigFromUI();
+                this.componentConfiguration.FieldDataSets = this.GetFieldDataFromFile();
+                this.BuildForm();
             }
-
-            this.componentConfiguration.FieldDataSets = this.GetFieldDataFromFile();
-            this.BuildForm();
         }
 
         /// <summary>
@@ -319,10 +317,11 @@ namespace Bechtle.FillablePdfDestination
         {
             this.dialogFolder.ShowDialog();
 
-            if (this.dialogFolder.SelectedPath.Length > 0)
+            if (!string.IsNullOrEmpty(this.dialogFolder.SelectedPath))
             {
-                this.componentConfiguration.FolderPath = this.dialogFolder.SelectedPath;
-                this.lblFolder.Text = componentConfiguration.FolderPath;
+                this.lblFolder.Text = this.dialogFolder.SelectedPath;
+                this.componentConfiguration = this.UpdateConfigFromUI();
+                this.BuildForm();
             }
         }
 
@@ -340,6 +339,8 @@ namespace Bechtle.FillablePdfDestination
             NameBuilderForm nameBuilderForm = new NameBuilderForm(inputColumnInfos.ToList(), this.componentConfiguration);
             nameBuilderForm.ShowDialog();
             this.lblNameBuilder.Text = this.componentConfiguration.FormatString;
+            this.componentConfiguration = this.UpdateConfigFromUI();
+            this.BuildForm();
         }
 
         /// <summary>
@@ -368,7 +369,7 @@ namespace Bechtle.FillablePdfDestination
         /// </param>
         private void btnOK_Click(object sender, EventArgs e)
         {
-            this.componentConfiguration = this.UpdateConfig();
+            this.componentConfiguration = this.UpdateConfigFromUI();
             this.outputConfigJsonString = this.componentConfiguration.ToJsonString();
             this.DialogResult = DialogResult.OK;
             this.Dispose();

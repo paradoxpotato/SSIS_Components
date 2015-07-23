@@ -88,13 +88,13 @@
             // 
             // lblNameBuilder
             // 
-            this.lblNameBuilder.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.lblNameBuilder.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblNameBuilder.Location = new System.Drawing.Point(98, 85);
+            this.lblNameBuilder.BackColor = System.Drawing.SystemColors.Control;
+            this.lblNameBuilder.Location = new System.Drawing.Point(98, 84);
             this.lblNameBuilder.Name = "lblNameBuilder";
             this.lblNameBuilder.Size = new System.Drawing.Size(453, 18);
             this.lblNameBuilder.TabIndex = 5;
             this.lblNameBuilder.Text = "lblNameBuilder";
+            this.lblNameBuilder.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnName
             // 
@@ -109,23 +109,23 @@
             // 
             // lblFolder
             // 
-            this.lblFolder.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.lblFolder.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblFolder.Location = new System.Drawing.Point(98, 55);
+            this.lblFolder.BackColor = System.Drawing.SystemColors.Control;
+            this.lblFolder.Location = new System.Drawing.Point(98, 54);
             this.lblFolder.Name = "lblFolder";
             this.lblFolder.Size = new System.Drawing.Size(453, 18);
             this.lblFolder.TabIndex = 3;
             this.lblFolder.Text = "lblFolder";
+            this.lblFolder.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblTemplate
             // 
-            this.lblTemplate.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.lblTemplate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblTemplate.Location = new System.Drawing.Point(98, 25);
+            this.lblTemplate.BackColor = System.Drawing.SystemColors.Control;
+            this.lblTemplate.Location = new System.Drawing.Point(98, 24);
             this.lblTemplate.Name = "lblTemplate";
             this.lblTemplate.Size = new System.Drawing.Size(453, 18);
             this.lblTemplate.TabIndex = 2;
             this.lblTemplate.Text = "lblTemplate";
+            this.lblTemplate.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnFolder
             // 
