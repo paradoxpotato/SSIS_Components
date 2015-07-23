@@ -68,27 +68,28 @@ namespace Bechtle.FillablePdfDestination
         /// </summary>
         private void BuildForm()
         {
+            this.btnOK.Enabled = false;
             this.lblTemplate.Text = this.componentConfiguration.TemplatePath;
             this.lblFolder.Text = this.componentConfiguration.FolderPath;
             this.lblNameBuilder.Text = this.componentConfiguration.FormatString;
+
+            if (!string.IsNullOrEmpty(this.lblTemplate.Text) && !string.IsNullOrEmpty(this.lblFolder.Text)
+                && !string.IsNullOrEmpty(this.lblNameBuilder.Text))
+            {
+                this.btnOK.Enabled = true;
+            }
+   
 
             this.dataGridView1.Columns.Clear();
             DataTable fieldData = this.GetDatatable();
 
             this.dataGridView1.DataSource = fieldData;
-            var dataGridViewColumn = this.dataGridView1.Columns["col_LineageID"];
 
-            // ToDo Spalten wenn möglich gemeinsam unsichtbar machen
-            if (dataGridViewColumn != null)
-            {
-                dataGridViewColumn.Visible = false;
-            }
-
-            var viewColumn = this.dataGridView1.Columns["col_Name"];
-            if (viewColumn != null)
-            {
-                viewColumn.Visible = false;
-            }
+            this.dataGridView1.Columns["dc_colLineageID"].Visible = false;
+            this.dataGridView1.Columns["dc_ColumnName"].Visible = false;
+            this.dataGridView1.Columns["dc_fieldType"].Visible = false;
+            this.dataGridView1.Columns["dc_fieldTypeName"].HeaderText = "Field-Type";
+            this.dataGridView1.Columns["dc_fieldName"].HeaderText = "Template-Field";
 
             foreach (DataGridViewColumn dc in this.dataGridView1.Columns)
             {
@@ -98,23 +99,25 @@ namespace Bechtle.FillablePdfDestination
             DataGridViewComboBoxColumn cbxColColumnNames = new DataGridViewComboBoxColumn();
 
             cbxColColumnNames.ReadOnly = false;
-            cbxColColumnNames.Name = "dgvcol_MappedColumn";
+            cbxColColumnNames.Name = "dgvc_MappedColumnName";
             cbxColColumnNames.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
+            cbxColColumnNames.HeaderText = "Column";
 
             this.dataGridView1.Columns.Add(cbxColColumnNames);
 
             foreach (DataGridViewRow gridViewRow in this.dataGridView1.Rows)
             {
                 DataGridViewComboBoxCell comboBoxCell =
-                    (DataGridViewComboBoxCell)gridViewRow.Cells["dgvcol_MappedColumn"];
+                    (DataGridViewComboBoxCell)gridViewRow.Cells["dgvc_MappedColumnName"];
                 comboBoxCell.Items.Add("--");
                 comboBoxCell.Value = comboBoxCell.Items[0];
 
                 foreach (InputColumnInfo info in this.inputColumnInfos)
                 {
+                    // ToDo Überarbeiten
                     ComponentConfiguration.FieldDataSet dataSet =
                         this.componentConfiguration.FieldDataSets.First(
-                            fds => fds.FieldName == gridViewRow.Cells["field_Name"].Value.ToString());
+                            fds => fds.FieldName == gridViewRow.Cells["dc_fieldName"].Value.ToString());
 
                     if (this.ColumnTypeFitsToFieldType(info.DataType, dataSet.FieldTypeId))
                     {
@@ -146,6 +149,20 @@ namespace Bechtle.FillablePdfDestination
         private bool ColumnTypeFitsToFieldType(DataType dataType, int fieldTypeId)
         {
             // ToDo ColumnTypeFitsToFieldType implementieren
+            
+            if (dataType == DataType.DT_IMAGE || dataType == DataType.DT_TEXT)
+            {
+                return false;
+            }
+
+            if (fieldTypeId == 2)
+            {
+                if (dataType != DataType.DT_BOOL && dataType != DataType.DT_BYREF_BOOL)
+                {
+                    return false;
+                }   
+            }
+
             return true;
         }
 
@@ -160,23 +177,28 @@ namespace Bechtle.FillablePdfDestination
             DataTable dt = new DataTable();
 
             DataColumn dcFieldName = dt.Columns.Add();
-            dcFieldName.ColumnName = "field_Name";
+            dcFieldName.ColumnName = "dc_fieldName";
             dcFieldName.Caption = "Template Field";
             dcFieldName.DataType = typeof(string);
 
             DataColumn dcFieldType = dt.Columns.Add();
-            dcFieldType.ColumnName = "field_Type";
+            dcFieldType.ColumnName = "dc_fieldType";
             dcFieldType.Caption = "Type";
             dcFieldType.DataType = typeof(int);
 
+            DataColumn dcFieldTypeName = dt.Columns.Add();
+            dcFieldTypeName.ColumnName = "dc_fieldTypeName";
+            dcFieldTypeName.Caption = "Type";
+            dcFieldTypeName.DataType = typeof(string);
+
             DataColumn dcLineageID = dt.Columns.Add();
-            dcLineageID.ColumnName = "col_LineageID";
+            dcLineageID.ColumnName = "dc_colLineageID";
             dcLineageID.Caption = "LineageID";
             dcLineageID.DataType = typeof(int);
 
 
             DataColumn dcColumnName = dt.Columns.Add();
-            dcColumnName.ColumnName = "col_Name";
+            dcColumnName.ColumnName = "dc_ColumnName";
             dcColumnName.Caption = "ColumnName";
             dcColumnName.DataType = typeof(string);
 
@@ -185,6 +207,7 @@ namespace Bechtle.FillablePdfDestination
                 DataRow dr = dt.NewRow();
                 dr[dcFieldName] = dataSet.FieldName;
                 dr[dcFieldType] = dataSet.FieldTypeId;
+                dr[dcFieldTypeName] = dataSet.FieldTypeName;
                 dr[dcColumnName] = dataSet.ColumnName;
                 dr[dcLineageID] = 0;
                 dt.Rows.Add(dr);
@@ -220,15 +243,12 @@ namespace Bechtle.FillablePdfDestination
                                                                   FieldName =
                                                                       dgvRow.Cells
                                                                       [
-                                                                          "field_Name"
+                                                                          "dc_fieldName"
                                                                       ].Value
-                                                                      .ToString(), 
-                                                                  FieldTypeName =
-                                                                      "Coming Soon", 
-                                                                  FieldTypeId =int.Parse(dgvRow.Cells["field_Type"].Value.ToString()),
+                                                                      .ToString(),
+                                                                  FieldTypeId =int.Parse(dgvRow.Cells["dc_fieldType"].Value.ToString()),
                                                                   ColumnName = 
-                                                                      dgvRow.Cells["dgvcol_MappedColumn"].Value.ToString
-                                                                      (),
+                                                                      dgvRow.Cells["dgvc_MappedColumnName"].Value.ToString(),
                                                               };
                 cfg.FieldDataSets.Add(fds);
             }

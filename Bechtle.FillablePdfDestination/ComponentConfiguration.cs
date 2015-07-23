@@ -12,6 +12,8 @@ namespace Bechtle.FillablePdfDestination
     using System.Collections.Generic;
     using System.Windows.Forms;
 
+    using iTextSharp.text.pdf;
+
     using Newtonsoft.Json;
 
     /// <summary>
@@ -196,12 +198,35 @@ namespace Bechtle.FillablePdfDestination
             {
                 get
                 {
-                    return this.fieldTypeName;
-                }
-
-                set
-                {
-                    this.fieldTypeName = value;
+                    string typeName = String.Empty;
+                    switch (this.FieldTypeId)
+                    {
+                        case AcroFields.FIELD_TYPE_CHECKBOX:
+                            typeName = "Checkbox";
+                            break;
+                        case AcroFields.FIELD_TYPE_COMBO:
+                            typeName = "Combobox";
+                            break;
+                        case AcroFields.FIELD_TYPE_LIST:
+                            typeName = "List";
+                            break;
+                        case AcroFields.FIELD_TYPE_NONE:
+                            typeName = "None";
+                            break;
+                        case AcroFields.FIELD_TYPE_PUSHBUTTON:
+                            typeName = "Pushbutton";
+                            break;
+                        case AcroFields.FIELD_TYPE_RADIOBUTTON:
+                            typeName = "Radiobutton";
+                            break;
+                        case AcroFields.FIELD_TYPE_TEXT:
+                            typeName = "Text";
+                            break;
+                        case AcroFields.FIELD_TYPE_SIGNATURE:
+                            typeName = "Signature";
+                            break;
+                    }
+                    return typeName;
                 }
             }
 

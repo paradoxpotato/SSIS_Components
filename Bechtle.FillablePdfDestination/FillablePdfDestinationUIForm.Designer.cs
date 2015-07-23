@@ -46,6 +46,10 @@
             this.grBxSettings.SuspendLayout();
             this.SuspendLayout();
             // 
+            // dialogTemplate
+            // 
+            this.dialogTemplate.Filter = "Pdf-Files|*.pdf";
+            // 
             // pnlDgv
             // 
             this.pnlDgv.Controls.Add(this.dataGridView1);

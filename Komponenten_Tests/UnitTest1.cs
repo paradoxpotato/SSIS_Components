@@ -28,10 +28,10 @@ namespace Komponenten_Tests
             inputColumnInfos.Add(new InputColumnInfo("Floatspalte", DataType.DT_DECIMAL, 13, "ID: Floatspalte"));
 
 
+
+
             ComponentConfiguration config = new ComponentConfiguration();
             config.FieldDataSets = new List<ComponentConfiguration.FieldDataSet>();
-            config.FolderPath = "FolderPath";
-            config.TemplatePath = "TemplatePath";
 
             config.FieldDataSets.Add(new ComponentConfiguration.FieldDataSet("Feld 1", 3, "Combobox", "ID: Spalte 1", "Boolspalte"));
             config.FieldDataSets.Add(new ComponentConfiguration.FieldDataSet("Feld 2", 4, "Combobox", "ID: Spalte 2", "Stringspalte"));
