@@ -10,7 +10,6 @@ namespace Bechtle.FillablePdfDestination
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -21,92 +20,89 @@ namespace Bechtle.FillablePdfDestination
     using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
     /// <summary>
-    /// Main Class, Implementing Methods of the Pipeline-Component Interface
+    ///     Main Class, Implementing Methods of the Pipeline-Component Interface
     /// </summary>
-    [DtsPipelineComponent(ComponentType = ComponentType.DestinationAdapter,
-        DisplayName = "Bechtle FillablePdfDestination", IconResource = "Bechtle.FillablePdfDestination.pdfforge.ico",
-        Description = "Creates PDFs writing input Data to fields defined by a fillable pdf-Template and another Test",
-        UITypeName = "Bechtle.FillablePdfDestination.FillablePdfDestinationUI, Bechtle.FillablePdfDestination, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9f75f02631159792"
+    [DtsPipelineComponent(ComponentType = ComponentType.DestinationAdapter, 
+        DisplayName = "Bechtle FillablePdfDestination", IconResource = "Bechtle.FillablePdfDestination.pdfforge.ico", 
+        Description = "Creates PDFs writing input Data to fields defined by a fillable pdf-Template and another Test", 
+        UITypeName =
+            "Bechtle.FillablePdfDestination.FillablePdfDestinationUI, Bechtle.FillablePdfDestination, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9f75f02631159792"
         )]
     public class FillablePdfDestination : PipelineComponent
     {
         /// <summary>
-        /// The column name to buffer id.
+        ///     The column name to buffer id.
         /// </summary>
-        private Dictionary<string, int> columnNameToBufferID;
+        private Dictionary<string, int> _columnNameToBufferId;
 
         /// <summary>
-        /// The config.
+        ///     The config.
         /// </summary>
-        private ComponentConfiguration config;
+        private ComponentConfiguration _config;
 
         /// <summary>
-        /// The row count.
+        ///     The row count.
         /// </summary>
-        private int rowCount;
+        private int _rowCount;
 
         /// <summary>
-        /// The sw debug.
+        ///     The sw debug.
         /// </summary>
-        public StreamWriter swDebug;
+        public StreamWriter SwDebug;
 
         /// <summary>
-        /// The swResult.
+        ///     The swResult.
         /// </summary>
-        public StreamWriter swResult;
+        public StreamWriter SwResult;
 
         /// <summary>
-        /// The provide component properties.
+        ///     The provide component properties.
         /// </summary>
         public override void ProvideComponentProperties()
         {
             this.RemoveAllInputsOutputsAndCustomProperties();
 
-            IDTSInput100 input = this.ComponentMetaData.InputCollection.New();
+            var input = this.ComponentMetaData.InputCollection.New();
             input.Name = "Input";
 
-            IDTSCustomProperty100 settings = this.ComponentMetaData.CustomPropertyCollection.New();
+            var settings = this.ComponentMetaData.CustomPropertyCollection.New();
             settings.Name = "Settings";
             settings.TypeConverter = "NOTBROWSABLE";
         }
 
         /// <summary>
-        /// The pre execute.
+        ///     The pre execute.
         /// </summary>
         public override void PreExecute()
         {
-            IDTSInput100 input = this.ComponentMetaData.InputCollection["Input"];
+            var input = this.ComponentMetaData.InputCollection["Input"];
 
             string settingsString = this.ComponentMetaData.CustomPropertyCollection["Settings"].Value.ToString();
-            this.config = ComponentConfiguration.CreateFromJson(settingsString);
+            this._config = ComponentConfiguration.CreateFromJson(settingsString);
 
-
-            string debugFilePath = this.config.FolderPath + @"\debugfile.txt";
-            string resultPath = this.config.FolderPath + @"\resultfile.txt";
+            var debugFilePath = this._config.FolderPath + @"\debugfile.txt";
+            var resultPath = this._config.FolderPath + @"\resultfile.txt";
             Directory.CreateDirectory(Path.GetDirectoryName(resultPath));
 
             Stream testfileStream = new FileStream(resultPath, FileMode.Create);
-            this.swResult = new StreamWriter(testfileStream);
-
+            this.SwResult = new StreamWriter(testfileStream);
 
             Stream debugFileStream = new FileStream(debugFilePath, FileMode.Create);
-            this.swDebug = new StreamWriter(debugFileStream);
+            this.SwDebug = new StreamWriter(debugFileStream);
 
-           
+            this._columnNameToBufferId = new Dictionary<string, int>();
 
-            this.columnNameToBufferID = new Dictionary<string, int>();
+            this._columnNameToBufferId.Add("--", -1);
 
-            this.columnNameToBufferID.Add("--", -1);
+            var testString = string.Empty;
 
-            string testString = string.Empty;
-
-            this.rowCount = 0;
+            this._rowCount = 0;
 
             foreach (IDTSInputColumn100 inputColumn100 in input.InputColumnCollection)
             {
-                string columnName = inputColumn100.Name;
-                int bufferId = this.BufferManager.FindColumnByLineageID(input.Buffer, inputColumn100.LineageID);
-                this.columnNameToBufferID.Add(columnName, bufferId);
+                var columnName = inputColumn100.Name;
+                var bufferId = this.BufferManager.FindColumnByLineageID(input.Buffer, inputColumn100.LineageID);
+                this._columnNameToBufferId.Add(columnName, bufferId);
             }
 
             base.PreExecute();
@@ -115,18 +111,18 @@ namespace Bechtle.FillablePdfDestination
         /// <summary>
         /// The on input path attached.
         /// </summary>
-        /// <param name="inputID">
+        /// <param name="inputId">
         /// The input id.
         /// </param>
-        public override void OnInputPathAttached(int inputID)
+        public override void OnInputPathAttached(int inputId)
         {
             {
-                base.OnInputPathAttached(inputID);
+                base.OnInputPathAttached(inputId);
 
-                for (int i = 0; i < this.ComponentMetaData.InputCollection.Count; i++)
+                for (var i = 0; i < this.ComponentMetaData.InputCollection.Count; i++)
                 {
                     this.ComponentMetaData.InputCollection[i].InputColumnCollection.RemoveAll();
-                    IDTSVirtualInput100 input = this.ComponentMetaData.InputCollection[i].GetVirtualInput();
+                    var input = this.ComponentMetaData.InputCollection[i].GetVirtualInput();
                     foreach (IDTSVirtualInputColumn100 vcol in input.VirtualInputColumnCollection)
                     {
                         input.SetUsageType(vcol.LineageID, DTSUsageType.UT_READONLY);
@@ -136,52 +132,53 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        /// The validate.
+        ///     The validate.
         /// </summary>
         /// <returns>
-        /// The <see cref="DTSValidationStatus"/>.
+        ///     The <see cref="DTSValidationStatus" />.
         /// </returns>
         public override DTSValidationStatus Validate()
         {
             ComponentConfiguration cfg;
             object value = this.ComponentMetaData.CustomPropertyCollection["Settings"].Value;
-            bool pbCancel = true;
+            var pbCancel = true;
 
             if (value == null)
             {
                 this.ComponentMetaData.FireError(
-                    0,
-                    this.ComponentMetaData.Name,
-                    "The component is not configured!",
-                    string.Empty,
-                    0,
+                    0, 
+                    this.ComponentMetaData.Name, 
+                    "The component is not configured!", 
+                    string.Empty, 
+                    0, 
                     out pbCancel);
                 return DTSValidationStatus.VS_NEEDSNEWMETADATA;
             }
 
             cfg = ComponentConfiguration.CreateFromJson(value.ToString());
-            List<string> columnNames = new List<string>();
+            var columnNames = new List<string>();
             columnNames.AddRange(cfg.FieldDataSets.Select(x => x.ColumnName).ToList());
 
-            IDTSInputColumnCollection100 inputColumns = ComponentMetaData.InputCollection[0].InputColumnCollection;
+            var inputColumns = this.ComponentMetaData.InputCollection[0].InputColumnCollection;
 
-            List<string> componentInputColumnNames = new List<string>();
+            var componentInputColumnNames = new List<string>();
 
             foreach (IDTSInputColumn100 col in inputColumns)
             {
                 componentInputColumnNames.Add(col.Name);
             }
 
-            foreach (ComponentConfiguration.FieldDataSet fds in cfg.FieldDataSets)
+            foreach (var fds in cfg.FieldDataSets)
             {
                 if (!componentInputColumnNames.Contains(fds.ColumnName) && fds.ColumnName != "--")
                 {
                     this.ComponentMetaData.FireError(
-                         0,
-                  this.ComponentMetaData.Name, "Column " + fds.ColumnName + " not found!",
-                  string.Empty,
-                  0,
-                  out pbCancel);
+                        0, 
+                        this.ComponentMetaData.Name, 
+                        "Column " + fds.ColumnName + " not found!", 
+                        string.Empty, 
+                        0, 
+                        out pbCancel);
                     return DTSValidationStatus.VS_NEEDSNEWMETADATA;
                 }
             }
@@ -189,11 +186,11 @@ namespace Bechtle.FillablePdfDestination
             if (this.ComponentMetaData.InputCollection.Count != 1)
             {
                 this.ComponentMetaData.FireError(
-                    0,
-                    this.ComponentMetaData.Name,
-                    "Incorrect number of inputs.",
-                    string.Empty,
-                    0,
+                    0, 
+                    this.ComponentMetaData.Name, 
+                    "Incorrect number of inputs.", 
+                    string.Empty, 
+                    0, 
                     out pbCancel);
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
@@ -204,106 +201,121 @@ namespace Bechtle.FillablePdfDestination
         /// <summary>
         /// The process input.
         /// </summary>
-        /// <param name="inputID">
+        /// <param name="inputId">
         /// The input id.
         /// </param>
         /// <param name="buffer">
         /// The buffer.
         /// </param>
-        public override void ProcessInput(int inputID, PipelineBuffer buffer)
+        public override void ProcessInput(int inputId, PipelineBuffer buffer)
         {
             while (buffer.NextRow())
             {
+                // Read values from Buffer
+                var valuesById = new string[buffer.ColumnCount];
+                for (var i = 0; i < valuesById.Length; i++)
+                {
+                    var o = buffer[i];
+                    valuesById[i] = string.Empty;
+                    if (o != null)
+                    {
+                        valuesById[i] = o.ToString();
+                    }
+                }
+
+                // BuildFileName
+                var s = this._config.FormatString;
+                var nameElements = s.Split(new[] { "%" }, StringSplitOptions.RemoveEmptyEntries);
+                var fileName = string.Empty;
+
+                foreach (var nameElement in nameElements)
+                {
+                    // # Kennzeichnet Spalte!
+                    if (nameElement.Contains("#"))
+                    {
+                        var columnName = Regex.Replace(nameElement, "#", string.Empty);
+                        var bufferId = this._columnNameToBufferId[columnName];
+                        fileName = fileName.Insert(fileName.Length, valuesById[bufferId]);
+                    }
+                    else
+                    {
+                        fileName = fileName.Insert(fileName.Length, nameElement);
+                    }
+                }
+
+                fileName = fileName.Insert(fileName.Length, ".pdf");
+                fileName = fileName.Insert(0, this._config.FolderPath + @"\");
+
+                var fileNameIsValid = false;
+                FileInfo fileInfo = null;
                 try
                 {
-                    string s = this.config.FormatString;
-                    string[] name_Elements = s.Split(new[] { "%" }, StringSplitOptions.RemoveEmptyEntries);
-                    string dynamicFileName = string.Empty;
+                    fileInfo = new FileInfo(fileName);
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (PathTooLongException)
+                {
+                }
+                catch (NotSupportedException)
+                {
+                }
 
-                    for (int i = 0; i < name_Elements.Length; i++)
+                if (fileInfo == null)
+                {
+                    this.SwDebug.WriteLine("Filepath " + fileName + " is not valid!");
+                }
+                else
+                {
+                    this.SwDebug.WriteLine(fileName);
+                    fileNameIsValid = true;
+                }
+
+                if (!fileNameIsValid)
+                {
+                    continue;
+                }
+                try
+                {
+                    var stamper = new PdfStamper(
+                        new PdfReader(this._config.TemplatePath), 
+                        new FileStream(fileName, FileMode.Create));
+
+                    foreach (var fieldDataSet in this._config.FieldDataSets)
                     {
-                        // Namens-Bestandteil ist ein Spaltenname
-                        if (name_Elements[i].Contains("#"))
-                        {
-                            string columnName = Regex.Replace(name_Elements[i], "#", string.Empty);
-
-                            int bufferID = this.columnNameToBufferID[columnName];
-
-                            var value = string.Empty;
-                            if (bufferID != -1)
-                            {
-                                value = buffer[bufferID] != null ? buffer[bufferID].ToString() : string.Empty;
-                            }
-
-                            dynamicFileName = dynamicFileName.Insert(dynamicFileName.Length, value);
-                        }
-                        else
-                        {
-                            dynamicFileName = dynamicFileName.Insert(dynamicFileName.Length, name_Elements[i]);
-                        }
-                    }
-
-                    dynamicFileName = dynamicFileName.Insert(dynamicFileName.Length, ".pdf");
-                    this.swResult.WriteLine(dynamicFileName);
-
-                    PdfStamper stamper = new PdfStamper(
-                        new PdfReader(this.config.TemplatePath),
-                        new FileStream(this.config.FolderPath + @"\" + dynamicFileName, FileMode.Create));
-
-                    foreach (ComponentConfiguration.FieldDataSet fi in this.config.FieldDataSets)
-                    {
-                        int bufferID = this.columnNameToBufferID[fi.ColumnName];
-
-                        // ToDo Typ-Konvertierung!!!!!
+                        var bufferId = this._columnNameToBufferId[fieldDataSet.ColumnName];
                         var value = string.Empty;
-                        if (bufferID != -1)
+                        if (bufferId != -1)
                         {
-                            value = buffer[bufferID] != null ? buffer[bufferID].ToString() : string.Empty;
+                            value = valuesById[bufferId];
 
-                            if (fi.FieldTypeId == 2)
+                            if (fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_CHECKBOX)
+                                | fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_PUSHBUTTON))
                             {
-                                // Nur als Test gedacht!
                                 value = value.Equals("True") ? "Yes" : "No";
                             }
                         }
-
-                        stamper.AcroFields.SetField(fi.FieldName, value);
-                        this.swResult.Write(
-                            "|" + fi.FieldName + " : " + fi.FieldTypeId + " : " + bufferID + ":" + value + "|");
+                        stamper.AcroFields.SetField(fieldDataSet.FieldName, value);
                     }
-
                     stamper.Close();
-                    this.rowCount++;
-
-                    this.swResult.WriteLine();
-                    this.swResult.Write(dynamicFileName);
-                    this.swResult.WriteLine();
                 }
                 catch (Exception exception)
                 {
-                    for (int i = 0; i < buffer.ColumnCount; i++)
-                    {
-                        try
-                        {
-                            swDebug.Write(buffer[i].ToString() + "|");
-                        }
-                        catch
-                        {
-                            swDebug.Write("FEHLER!");
-                        }
-                    }
-                    this.swDebug.WriteLine(exception.Message);
-                    swDebug.WriteLine();
+                    this.SwDebug.WriteLine("Error while creating file " + fileName);
+                    this.SwDebug.WriteLine(exception.Message);
                 }
             }
         }
 
+        /// <summary>
+        /// The post execute.
+        /// </summary>
         public override void PostExecute()
         {
-            this.swDebug.Close();
-            this.swResult.Close();
+            this.SwDebug.Close();
+            this.SwResult.Close();
             base.PostExecute();
         }
     }
 }
-

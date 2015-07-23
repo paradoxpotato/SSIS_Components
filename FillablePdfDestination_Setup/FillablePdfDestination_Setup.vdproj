@@ -750,7 +750,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FillablePdfDestination_Setup"
         "ProductCode" = "8:{8E49C917-F356-4A23-9D65-D708A12DC68E}"
-        "PackageCode" = "8:{9C823B98-C214-48D6-A922-31C547B08483}"
+        "PackageCode" = "8:{045D05C0-BA59-40E2-AB2F-BBF10A3E4153}"
         "UpgradeCode" = "8:{D7A08DE1-32A4-4B81-873B-55B0A2C0E0B9}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
