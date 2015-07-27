@@ -44,11 +44,11 @@ namespace Komponenten_Tests
             FillablePdfDestinationUIForm editor = new FillablePdfDestinationUIForm(configString, inputColumnInfos.ToArray());
             editor.ShowDialog();
             MessageBox.Show(editor.DialogResult.ToString());
-            MessageBox.Show(editor.outputConfigJsonString);
+            MessageBox.Show(editor.OutputConfigJsonString);
 
             while (editor.DialogResult == DialogResult.OK | editor.DialogResult == DialogResult.Yes)
             {
-                editor = new FillablePdfDestinationUIForm(editor.outputConfigJsonString, inputColumnInfos.ToArray());
+                editor = new FillablePdfDestinationUIForm(editor.OutputConfigJsonString, inputColumnInfos.ToArray());
                 editor.ShowDialog();
             }
 

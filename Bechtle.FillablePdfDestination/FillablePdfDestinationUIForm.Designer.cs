@@ -89,7 +89,8 @@
             // lblNameBuilder
             // 
             this.lblNameBuilder.BackColor = System.Drawing.SystemColors.Control;
-            this.lblNameBuilder.Location = new System.Drawing.Point(98, 84);
+            this.lblNameBuilder.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblNameBuilder.Location = new System.Drawing.Point(98, 82);
             this.lblNameBuilder.Name = "lblNameBuilder";
             this.lblNameBuilder.Size = new System.Drawing.Size(453, 18);
             this.lblNameBuilder.TabIndex = 5;
@@ -110,7 +111,8 @@
             // lblFolder
             // 
             this.lblFolder.BackColor = System.Drawing.SystemColors.Control;
-            this.lblFolder.Location = new System.Drawing.Point(98, 54);
+            this.lblFolder.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblFolder.Location = new System.Drawing.Point(98, 55);
             this.lblFolder.Name = "lblFolder";
             this.lblFolder.Size = new System.Drawing.Size(453, 18);
             this.lblFolder.TabIndex = 3;
@@ -120,7 +122,8 @@
             // lblTemplate
             // 
             this.lblTemplate.BackColor = System.Drawing.SystemColors.Control;
-            this.lblTemplate.Location = new System.Drawing.Point(98, 24);
+            this.lblTemplate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblTemplate.Location = new System.Drawing.Point(98, 22);
             this.lblTemplate.Name = "lblTemplate";
             this.lblTemplate.Size = new System.Drawing.Size(453, 18);
             this.lblTemplate.TabIndex = 2;
@@ -182,7 +185,9 @@
             this.Controls.Add(this.grBxSettings);
             this.Controls.Add(this.pnlDgv);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
             this.Name = "FillablePdfDestinationUIForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "FillablePdfDestinationUIForm";
             this.Load += new System.EventHandler(this.FillablePdfDestinationUIForm_Load);
             this.pnlDgv.ResumeLayout(false);

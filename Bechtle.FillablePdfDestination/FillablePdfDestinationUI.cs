@@ -53,7 +53,7 @@ namespace Bechtle.FillablePdfDestination
 
             if (editor.DialogResult == DialogResult.OK || editor.DialogResult == DialogResult.Yes)
             {
-                this.metaData.CustomPropertyCollection["Settings"].Value = editor.outputConfigJsonString; 
+                this.metaData.CustomPropertyCollection["Settings"].Value = editor.OutputConfigJsonString; 
                 return true;
             }
 

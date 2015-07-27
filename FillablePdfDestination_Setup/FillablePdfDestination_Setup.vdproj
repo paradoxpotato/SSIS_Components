@@ -304,10 +304,10 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5.1"
                     {
-                    "Name" = "8:Microsoft .NET Framework 4.5 (x86 and x64)"
-                    "ProductCode" = "8:.NETFramework,Version=v4.5"
+                    "Name" = "8:Microsoft .NET Framework 4.5.1 (x86 und x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.5.1"
                     }
                 }
             }
@@ -364,7 +364,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "FrameworkVersion" = "8:.NETFramework,Version=v4.5"
+                "FrameworkVersion" = "8:.NETFramework,Version=v4.5.1"
                 "AllowLaterVersions" = "11:FALSE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=395269"
                 }
@@ -701,7 +701,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_F1C75CDE6718429892A993846C301E63"
             {
-            "DefaultLocation" = "8:C:\\Program Files (x86)\\Microsoft SQL Server\\120\\DTS"
+            "DefaultLocation" = "8:[DTS_PATH]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -739,6 +739,14 @@
         }
         "Locator"
         {
+            "{CF66B7F7-B7DA-4B08-A67A-233430638C9C}:_8D54F877D88741B080E3B97D4EA9160F"
+            {
+            "Name" = "8:Search for DtsPath"
+            "Root" = "2:1"
+            "RegKey" = "8:SOFTWARE\\Microsoft\\Microsoft SQL Server\\120\\SSIS\\Setup\\DTSPath"
+            "Value" = "8:"
+            "Property" = "8:DTS_PATH"
+            }
         }
         "MsiBootstrapper"
         {
@@ -748,20 +756,20 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:FillablePdfDestination_Setup"
+        "ProductName" = "8:FillablePdfDestination"
         "ProductCode" = "8:{8E49C917-F356-4A23-9D65-D708A12DC68E}"
-        "PackageCode" = "8:{045D05C0-BA59-40E2-AB2F-BBF10A3E4153}"
+        "PackageCode" = "8:{EBAE5821-3F47-4E09-B20E-B73C0D34F5C6}"
         "UpgradeCode" = "8:{D7A08DE1-32A4-4B81-873B-55B0A2C0E0B9}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
         "Manufacturer" = "8:Bechtle AG"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:FillablePdfDestination_Setup"
+        "Title" = "8:FillablePdfDestination_Setup_x64"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Bechtle AG"
         "Keywords" = "8:"
@@ -771,7 +779,7 @@
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
-        "TargetPlatform" = "3:0"
+        "TargetPlatform" = "3:1"
         "PreBuildEvent" = "8:"
         "PostBuildEvent" = "8:"
         "RunPostBuildEvent" = "3:0"
@@ -1271,7 +1279,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C6B2839CB2FE4BDB942BD3CF27FA299F"
             {
-            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Debug\\Bechtle.FillablePdfDestination.dll"
+            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Release\\Bechtle.FillablePdfDestination.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_15FB9C728FF548129B11A2E845987064"
@@ -1299,7 +1307,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_DC98F55C000A4DD895F0DC74D11291EF"
             {
-            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Debug\\Bechtle.FillablePdfDestination.dll"
+            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Release\\Bechtle.FillablePdfDestination.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C2B4A20099324CB88C3C95F95C9EB359"

@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FillablePdfDestination.cs" company="">
+// <copyright file="FillablePdfDestination.cs" company="Bechtle-AG">
 //   
 // </copyright>
 // <summary>
@@ -10,6 +10,7 @@ namespace Bechtle.FillablePdfDestination
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -31,94 +32,115 @@ namespace Bechtle.FillablePdfDestination
     public class FillablePdfDestination : PipelineComponent
     {
         /// <summary>
-        ///     The column name to buffer id.
+        ///     Contains IDs of the Input-Buffer with the Corresponding names
         /// </summary>
-        private Dictionary<string, int> _columnNameToBufferId;
+        private Dictionary<string, int> bufferIdByColumnName;
 
         /// <summary>
-        ///     The config.
+        ///     Contains all the user-defined settings of the component (see Component-Configuration)
         /// </summary>
-        private ComponentConfiguration _config;
+        private ComponentConfiguration config;
 
         /// <summary>
-        ///     The row count.
+        ///     (not Used) Number of the processed rows
         /// </summary>
-        private int _rowCount;
+        private int rowCount;
 
         /// <summary>
-        ///     The sw debug.
+        ///     Writer to Debug-Txt
         /// </summary>
-        public StreamWriter SwDebug;
+        private StreamWriter streamWriterDebug;
 
         /// <summary>
-        ///     The swResult.
+        ///     (not used) Writer to result-Txt
         /// </summary>
-        public StreamWriter SwResult;
+        private StreamWriter streamWriterResult;
 
         /// <summary>
-        ///     The provide component properties.
+        ///     Overrides Provide Component-Properties method of the Pipeline-Component-Class and
+        ///     Provides Input, Output and User-Defined properties used by the Pipeline-Component
+        ///     Called once when the component is dragged into the dataflow
         /// </summary>
         public override void ProvideComponentProperties()
         {
+            // All Default-Properties are removed
             this.RemoveAllInputsOutputsAndCustomProperties();
 
+            // Defines new Input and new Component-Properties in the Meta-Data of the Component
+
+            // Input
             var input = this.ComponentMetaData.InputCollection.New();
             input.Name = "Input";
 
+            // This property contains all settings set from the UI, safed in a single JSON-String
             var settings = this.ComponentMetaData.CustomPropertyCollection.New();
             settings.Name = "Settings";
+
+            // As the user should not create an invalid Json-String, this property is made invisible
             settings.TypeConverter = "NOTBROWSABLE";
         }
 
         /// <summary>
-        ///     The pre execute.
+        ///     Called once for each component in the dataflow before executing it. Does everything that is necessary to process
+        ///     the input-data.
         /// </summary>
         public override void PreExecute()
         {
+            // ToDO Map Buffers
+
+            // References to the Component-Input named "Input" (see Component-Properties)
             var input = this.ComponentMetaData.InputCollection["Input"];
 
+            // Gets Json-String from the Settings-Property and deserializes the configuration for this component
             string settingsString = this.ComponentMetaData.CustomPropertyCollection["Settings"].Value.ToString();
-            this._config = ComponentConfiguration.CreateFromJson(settingsString);
+            this.config = ComponentConfiguration.CreateFromJson(settingsString);
 
-            var debugFilePath = this._config.FolderPath + @"\debugfile.txt";
-            var resultPath = this._config.FolderPath + @"\resultfile.txt";
+            // Two FileWriters are instanciated to write debug-Information in the Output-Folder defined by the configurations folderPath
+            var debugFilePath = this.config.FolderPath + @"\debugfile.txt";
+            var resultPath = this.config.FolderPath + @"\resultfile.txt";
+
+            // If the requested Direcoty doesn't exist, it is created
             Directory.CreateDirectory(Path.GetDirectoryName(resultPath));
 
             Stream testfileStream = new FileStream(resultPath, FileMode.Create);
-            this.SwResult = new StreamWriter(testfileStream);
+            this.streamWriterResult = new StreamWriter(testfileStream);
 
             Stream debugFileStream = new FileStream(debugFilePath, FileMode.Create);
-            this.SwDebug = new StreamWriter(debugFileStream);
+            this.streamWriterDebug = new StreamWriter(debugFileStream);
 
-            this._columnNameToBufferId = new Dictionary<string, int>();
-
-            this._columnNameToBufferId.Add("--", -1);
-
-            var testString = string.Empty;
-
-            this._rowCount = 0;
+            
+            // Mapps the name of each input-column to it's assigned bufferID for easier access during processing the input-data
+            this.bufferIdByColumnName = new Dictionary<string, int>();
+            this.bufferIdByColumnName = new Dictionary<string, int>();
+            this.rowCount = 0;
 
             foreach (IDTSInputColumn100 inputColumn100 in input.InputColumnCollection)
             {
                 var columnName = inputColumn100.Name;
                 var bufferId = this.BufferManager.FindColumnByLineageID(input.Buffer, inputColumn100.LineageID);
-                this._columnNameToBufferId.Add(columnName, bufferId);
+                this.bufferIdByColumnName.Add(columnName, bufferId);
             }
 
+            // "--" represents that the template does not receive any data from the input, so the buffer id is set to -1, a non existent buffer-ID
+            this.bufferIdByColumnName.Add("--", -1);
+
+            // The default PreExecute-Method of Pipeline-Component is called to round up the preparation
             base.PreExecute();
         }
 
         /// <summary>
-        /// The on input path attached.
+        /// Design-time method: Is called when a upstream dataflow-component is connected
         /// </summary>
         /// <param name="inputId">
-        /// The input id.
+        /// ID of the connected Input
         /// </param>
         public override void OnInputPathAttached(int inputId)
         {
             {
+                // Calls default method from SSIS
                 base.OnInputPathAttached(inputId);
 
+                // Automatically adds all output-columns of the upstream-component to the component's InputColumn-Collection
                 for (var i = 0; i < this.ComponentMetaData.InputCollection.Count; i++)
                 {
                     this.ComponentMetaData.InputCollection[i].InputColumnCollection.RemoveAll();
@@ -132,13 +154,15 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        ///     The validate.
+        ///     runtime/design-Time method: Validates the component after each change to find errors which would prevent the
+        ///     dataflow from being executed
         /// </summary>
         /// <returns>
-        ///     The <see cref="DTSValidationStatus" />.
+        ///     Validation-Status processed by the SSDT for Visual Studio <see cref="DTSValidationStatus" />.
         /// </returns>
         public override DTSValidationStatus Validate()
         {
+            // Checks if the component has been configured before executing by testing if the Property "Settings" has been set
             ComponentConfiguration cfg;
             object value = this.ComponentMetaData.CustomPropertyCollection["Settings"].Value;
             var pbCancel = true;
@@ -155,18 +179,12 @@ namespace Bechtle.FillablePdfDestination
                 return DTSValidationStatus.VS_NEEDSNEWMETADATA;
             }
 
+            // Checks if all columns to read are present in the components InputColumnCollection
             cfg = ComponentConfiguration.CreateFromJson(value.ToString());
-            var columnNames = new List<string>();
-            columnNames.AddRange(cfg.FieldDataSets.Select(x => x.ColumnName).ToList());
 
             var inputColumns = this.ComponentMetaData.InputCollection[0].InputColumnCollection;
 
-            var componentInputColumnNames = new List<string>();
-
-            foreach (IDTSInputColumn100 col in inputColumns)
-            {
-                componentInputColumnNames.Add(col.Name);
-            }
+            var componentInputColumnNames = (from IDTSInputColumn100 col in inputColumns select col.Name).ToList();
 
             foreach (var fds in cfg.FieldDataSets)
             {
@@ -183,6 +201,7 @@ namespace Bechtle.FillablePdfDestination
                 }
             }
 
+            // Checks if exacly one input is attached to the component
             if (this.ComponentMetaData.InputCollection.Count != 1)
             {
                 this.ComponentMetaData.FireError(
@@ -195,61 +214,82 @@ namespace Bechtle.FillablePdfDestination
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
 
+            // base-Validation by SSIS-Datatools
             return base.Validate();
         }
 
         /// <summary>
-        /// The process input.
+        /// Processes all input directed to the component (Write to pdf)
         /// </summary>
         /// <param name="inputId">
-        /// The input id.
+        /// Id of the Input (in fact not used as only one input is connected)
         /// </param>
         /// <param name="buffer">
-        /// The buffer.
+        /// The Runtime-Buffer providing the data contained in the dataflow
         /// </param>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", 
+            Justification = "Reviewed. Suppression is OK here.")]
         public override void ProcessInput(int inputId, PipelineBuffer buffer)
         {
+            // While there are still rows in the Buffer...
             while (buffer.NextRow())
             {
-                // Read values from Buffer
+                // Tires to convert the value of each column in the current buffer to a string and writes it into an array to avoid to access the buffer twice, decreasing the performance
                 var valuesById = new string[buffer.ColumnCount];
                 for (var i = 0; i < valuesById.Length; i++)
                 {
                     var o = buffer[i];
+
+                    // Default value in the array is an empty string
                     valuesById[i] = string.Empty;
+
+                    // If the column-value is not null, it is converted to a string and writen to the array
                     if (o != null)
                     {
                         valuesById[i] = o.ToString();
                     }
                 }
 
-                // BuildFileName
-                var s = this._config.FormatString;
+                // Creates the name of the output-file from the newly-created string-array containing the buffer data and the component-configuration's formatString
+
+                // The ComponentConfiguration's Format string is split into it's name-elements
+                var s = this.config.FormatString;
                 var nameElements = s.Split(new[] { "%" }, StringSplitOptions.RemoveEmptyEntries);
                 var fileName = string.Empty;
-
                 foreach (var nameElement in nameElements)
                 {
-                    // # Kennzeichnet Spalte!
+                    // '#' in a nameElement implies, that this nameElement is a columnName
                     if (nameElement.Contains("#"))
                     {
                         var columnName = Regex.Replace(nameElement, "#", string.Empty);
-                        var bufferId = this._columnNameToBufferId[columnName];
+
+                        var bufferId = this.bufferIdByColumnName[columnName];
+
+                        // The value of the buffer-column cached in the string-array is accessed by the BufferID and appended to the fileName;
                         fileName = fileName.Insert(fileName.Length, valuesById[bufferId]);
                     }
                     else
                     {
+                        // If there's no '#' the value of the nameElement is appended to the fileName:
                         fileName = fileName.Insert(fileName.Length, nameElement);
                     }
                 }
 
+                // Completes the files path by adding the ".pdf"-extension and the user-set folderPath;
                 fileName = fileName.Insert(fileName.Length, ".pdf");
-                fileName = fileName.Insert(0, this._config.FolderPath + @"\");
+                fileName = fileName.Insert(0, this.config.FolderPath + @"\");
 
+                // Checks if the generated fileName is valid and unique
                 var fileNameIsValid = false;
                 FileInfo fileInfo = null;
                 try
                 {
+                    if (File.Exists(fileName))
+                    {
+                        this.streamWriterDebug.WriteLine("File " + fileName + " already exists!");
+                        throw new NotSupportedException();
+                    }
+
                     fileInfo = new FileInfo(fileName);
                 }
                 catch (ArgumentException)
@@ -264,57 +304,70 @@ namespace Bechtle.FillablePdfDestination
 
                 if (fileInfo == null)
                 {
-                    this.SwDebug.WriteLine("Filepath " + fileName + " is not valid!");
+                    this.streamWriterDebug.WriteLine("Filepath " + fileName + " is not valid!");
                 }
                 else
                 {
-                    this.SwDebug.WriteLine(fileName);
+                    this.streamWriterDebug.WriteLine(fileName);
                     fileNameIsValid = true;
                 }
 
                 if (!fileNameIsValid)
                 {
+                    // If the fileName is not valid, no other steps are made;
                     continue;
                 }
+
                 try
                 {
+                    //Instanciates a new PdfStamper to fill the fields in the template
                     var stamper = new PdfStamper(
-                        new PdfReader(this._config.TemplatePath), 
+                        new PdfReader(this.config.TemplatePath), 
                         new FileStream(fileName, FileMode.Create));
 
-                    foreach (var fieldDataSet in this._config.FieldDataSets)
+                    // Loops over each fieldDataSet in the config's components fieldDataset-collection
+                    foreach (var fieldDataSet in this.config.FieldDataSets)
                     {
-                        var bufferId = this._columnNameToBufferId[fieldDataSet.ColumnName];
+                        // Gets the bufferID of  the column mapped to the fillable field in the template
+                        var bufferId = this.bufferIdByColumnName[fieldDataSet.ColumnName];
                         var value = string.Empty;
                         if (bufferId != -1)
                         {
+                            // The value of the buffer-column cached in the string-array is accessed by the BufferID and safed to temporary variable 
                             value = valuesById[bufferId];
 
+                            // iTextsharp Field-Types "Checkbox" and "Pushbutton" need the strings "Yes" or "No" to check or uncheck template-fields. Because of this "True" and "False" have to be converted
                             if (fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_CHECKBOX)
                                 | fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_PUSHBUTTON))
                             {
                                 value = value.Equals("True") ? "Yes" : "No";
                             }
                         }
+
+                        // Writes value to the field in the template assigned to the fieldDatasets fieldName;
                         stamper.AcroFields.SetField(fieldDataSet.FieldName, value);
                     }
+
+                    // Closes the Pdf.Stamper
                     stamper.Close();
                 }
                 catch (Exception exception)
                 {
-                    this.SwDebug.WriteLine("Error while creating file " + fileName);
-                    this.SwDebug.WriteLine(exception.Message);
+                    // If any error happens (for example while filling the form), the  occuring exception is caught and the fileName and the corresponding errorMEssage is written to the debug file
+                    this.streamWriterDebug.WriteLine("Error while creating file " + fileName);
+                    this.streamWriterDebug.WriteLine(exception.Message);
                 }
             }
         }
 
         /// <summary>
-        /// The post execute.
+        ///     Called once after the dataflow has finished successfully
         /// </summary>
         public override void PostExecute()
         {
-            this.SwDebug.Close();
-            this.SwResult.Close();
+            // All fileStreams are closed and the default PostExecute-Method is called;
+            this.streamWriterDebug.Close();
+            this.streamWriterResult.Close();
             base.PostExecute();
         }
     }
