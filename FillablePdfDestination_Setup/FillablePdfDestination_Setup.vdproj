@@ -758,7 +758,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FillablePdfDestination"
         "ProductCode" = "8:{8E49C917-F356-4A23-9D65-D708A12DC68E}"
-        "PackageCode" = "8:{EBAE5821-3F47-4E09-B20E-B73C0D34F5C6}"
+        "PackageCode" = "8:{68D44EAC-EB47-4A2F-95FB-B69FB996ADCE}"
         "UpgradeCode" = "8:{D7A08DE1-32A4-4B81-873B-55B0A2C0E0B9}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -1279,7 +1279,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C6B2839CB2FE4BDB942BD3CF27FA299F"
             {
-            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Release\\Bechtle.FillablePdfDestination.dll"
+            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Debug\\Bechtle.FillablePdfDestination.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_15FB9C728FF548129B11A2E845987064"
@@ -1307,7 +1307,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_DC98F55C000A4DD895F0DC74D11291EF"
             {
-            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Release\\Bechtle.FillablePdfDestination.dll"
+            "SourcePath" = "8:..\\Bechtle.FillablePdfDestination\\obj\\Debug\\Bechtle.FillablePdfDestination.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C2B4A20099324CB88C3C95F95C9EB359"

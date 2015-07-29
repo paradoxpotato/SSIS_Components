@@ -6,7 +6,6 @@
 //   The fillable pdf destination ui form.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace Bechtle.FillablePdfDestination
 {
     using System;
@@ -25,9 +24,14 @@ namespace Bechtle.FillablePdfDestination
     public partial class FillablePdfDestinationUIForm : Form
     {
         /// <summary>
-        ///     Contains information about the InputColumns, safed in an array of custom structs
+        ///     Contains information about the InputColumns, saved in an array of custom structs
         /// </summary>
         private readonly InputColumnInfo[] inputColumnInfos;
+
+        /// <summary>
+        ///     Saved in the MetaData this string is is parsed to the Config-Object
+        /// </summary>
+        private readonly string inputConfigJsonString;
 
         /// <summary>
         ///     Instance of the Class ComponentConfiguration, contains all settings made in the UI
@@ -35,31 +39,29 @@ namespace Bechtle.FillablePdfDestination
         private ComponentConfiguration componentConfiguration;
 
         /// <summary>
-        ///     Safed in the metaData this string is is parsed to the Config-Object
-        /// </summary>
-        private readonly string inputConfigJsonString;
-
-        /// <summary>
-        ///     Constructor for the Editor<see cref="FillablePdfDestinationUIForm" />
+        /// Initializes a new instance of the <see cref="FillablePdfDestinationUIForm"/> class. 
+        /// Constructor for the Editor<see cref="FillablePdfDestinationUIForm"/>
         /// </summary>
         /// <param name="inputConfigJsonString">
-        ///     The inputString that is parsed to the ConfigObject
+        /// The inputString that is parsed to the ConfigObject
         /// </param>
         /// <param name="inputColumnInfos">
-        ///     Information about the input colum
+        /// Information about the input colum
         /// </param>
         public FillablePdfDestinationUIForm(string inputConfigJsonString, InputColumnInfo[] inputColumnInfos)
-            //Uses the base constructor that only Initializes the component
+
+            // Uses the base constructor that only Initializes the component
             : this()
         {
-            //Initialize local fields from the constructor
+            // Initialize local fields from the constructor
             this.inputConfigJsonString = inputConfigJsonString;
             this.componentConfiguration = ComponentConfiguration.CreateFromJson(this.inputConfigJsonString);
             this.inputColumnInfos = inputColumnInfos;
         }
 
         /// <summary>
-        ///     Constructor for the Editor<see cref="FillablePdfDestinationUIForm" /> class.
+        /// Initializes a new instance of the <see cref="FillablePdfDestinationUIForm"/> class. 
+        ///     Constructor for the Editor<see cref="FillablePdfDestinationUIForm"/> class.
         /// </summary>
         public FillablePdfDestinationUIForm()
         {
@@ -67,7 +69,7 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        ///     Gets or sets the output config json string, which is safed in the ComponentMetaData later on
+        ///     Gets or sets the output config json string, which is saved in the ComponentMetaData later on
         /// </summary>
         public string OutputConfigJsonString { get; set; }
 
@@ -99,11 +101,13 @@ namespace Bechtle.FillablePdfDestination
             {
                 gridViewColumn.Visible = false;
             }
+
             var dataGridViewColumn = this.dataGridView1.Columns["dc_ColumnName"];
             if (dataGridViewColumn != null)
             {
                 dataGridViewColumn.Visible = false;
             }
+
             var viewColumn = this.dataGridView1.Columns["dc_fieldType"];
             if (viewColumn != null)
             {
@@ -116,6 +120,7 @@ namespace Bechtle.FillablePdfDestination
             {
                 column.HeaderText = "Field-Type";
             }
+
             var dataGridViewColumn1 = this.dataGridView1.Columns["dc_fieldName"];
 
             if (dataGridViewColumn1 != null)
@@ -129,8 +134,7 @@ namespace Bechtle.FillablePdfDestination
                 dc.ReadOnly = true;
             }
 
-            //Creates new ComboboxColumn and adds it to the Datagridview
-
+            // Creates new ComboboxColumn and adds it to the Datagridview
             var cbxColColumnNames = new DataGridViewComboBoxColumn();
             cbxColColumnNames.ReadOnly = false;
             cbxColColumnNames.Name = "dgvc_MappedColumnName";
@@ -142,26 +146,28 @@ namespace Bechtle.FillablePdfDestination
             foreach (DataGridViewRow gridViewRow in this.dataGridView1.Rows)
             {
                 var comboBoxCell = (DataGridViewComboBoxCell)gridViewRow.Cells["dgvc_MappedColumnName"];
+
                 // Each Combobox contains the Item "--" which represents if no column is selected
                 comboBoxCell.Items.Add("--");
 
-                //By default the selected Item is Items[0], or "--", if no changes are made later on
+                // By default the selected Item is Items[0], or "--", if no changes are made later on
                 comboBoxCell.Value = comboBoxCell.Items[0];
 
-                //Looping over all InputColumInfos
+                // Loops over all InputColumInfos
                 foreach (var info in this.inputColumnInfos)
                 {
                     // Gather the corresponding FieldDataSet by selecting the first (and only) Dataset from the collection via Linq
                     var dataSet =
                         this.componentConfiguration.FieldDataSets.First(
                             fds => fds.FieldName == gridViewRow.Cells["dc_fieldName"].Value.ToString());
-                    //If the ColumnType of the ColumnInfo is compatible to the Field-Datatype, it's column name is added to the Combobox-Items
+
+                    // If the ColumnType of the ColumnInfo is compatible to the Field-Datatype, it's column name is added to the Combobox-Items
                     if (this.ColumnTypeFitsToFieldType(info.DataType, dataSet.FieldTypeId))
                     {
                         comboBoxCell.Items.Add(info.ColumnName);
                     }
 
-                    //If the Combobox-Item in the current cell contain the name of the column mapped to the assigned Template-Field, the corresponding item is selected automatically
+                    // If the Combobox-Item in the current cell contain the name of the column mapped to the assigned Template-Field, the corresponding item is selected automatically
                     if (comboBoxCell.Items.Contains(dataSet.ColumnName))
                     {
                         comboBoxCell.Value = dataSet.ColumnName;
@@ -173,21 +179,20 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        ///     Checks if the ColumnType of an InputColumn is compatible to the assigned TemplateField
+        /// Checks if the ColumnType of an InputColumn is compatible to the assigned TemplateField
         /// </summary>
         /// <param name="dataType">
-        ///     The data type of the InputColumn
+        /// The data type of the InputColumn
         /// </param>
         /// <param name="fieldTypeId">
-        ///     The field type id of the Template-Field
+        /// The field type id of the Template-Field
         /// </param>
         /// <returns>
-        ///     True if the types are compatible, needs to be overhauled  <see cref="bool" />.
+        /// True if the types are compatible, needs to be overhauled  <see cref="bool"/>.
         /// </returns>
         private bool ColumnTypeFitsToFieldType(DataType dataType, int fieldTypeId)
         {
             // ToDo ColumnTypeFitsToFieldType implementieren
-
             if (dataType == DataType.DT_IMAGE || dataType == DataType.DT_TEXT)
             {
                 return false;
@@ -205,10 +210,10 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        ///     Creates the datatable which is shown in the Datagrid-View by reading from the Config-Object.
+        ///     Creates the Data-Table which is shown in the Data-Grid-View by reading from the Config-Object.
         /// </summary>
         /// <returns>
-        ///     Created Datatable <see cref="DataTable" />.
+        ///     Created Data-Table <see cref="DataTable" />.
         /// </returns>
         private DataTable GetDatatable()
         {
@@ -239,7 +244,7 @@ namespace Bechtle.FillablePdfDestination
             dcColumnName.Caption = "ColumnName";
             dcColumnName.DataType = typeof(string);
 
-            //Loops over each FieldDataSet in the ComponentConfiguration-Object writing it's properties into the Datatable
+            // Loops over each FieldDataSet in the ComponentConfiguration-Object writing it's properties into the Datatable
             foreach (var dataSet in this.componentConfiguration.FieldDataSets)
             {
                 var dr = dt.NewRow();
@@ -264,27 +269,27 @@ namespace Bechtle.FillablePdfDestination
         /// </returns>
         private ComponentConfiguration UpdateConfigFromUI()
         {
-            //Folder-Path, TemplatePath and FormatString are adopted from the corresponding label and saved to the Config-Object 
+            // Folder-Path, TemplatePath and FormatString are adopted from the corresponding label and saved to the Config-Object 
             var cfg = new ComponentConfiguration
                           {
-                              FieldDataSets = new List<ComponentConfiguration.FieldDataSet>(),
-                              FileNameFormat = new ComponentConfiguration.NameFormat(),
-                              FolderPath = this.lblFolder.Text,
-                              TemplatePath = this.lblTemplate.Text,
+                              FieldDataSets = new List<ComponentConfiguration.FieldDataSet>(), 
+                              FileNameFormat = new ComponentConfiguration.NameFormat(), 
+                              FolderPath = this.lblFolder.Text, 
+                              TemplatePath = this.lblTemplate.Text, 
                               FormatString = this.lblNameBuilder.Text
                           };
 
-            //Loops over the rows of the datagridview, creating and adding new FieldDataSets to the ConfigObject
+            // Loops over the rows of the datagridview, creating and adding new FieldDataSets to the ConfigObject
             foreach (DataGridViewRow dgvRow in this.dataGridView1.Rows)
             {
                 var fds = new ComponentConfiguration.FieldDataSet
                               {
                                   FieldName =
-                                      dgvRow.Cells["dc_fieldName"].Value.ToString(),
+                                      dgvRow.Cells["dc_fieldName"].Value.ToString(), 
                                   FieldTypeId =
                                       int.Parse(
                                           dgvRow.Cells["dc_fieldType"].Value
-                                      .ToString()),
+                                      .ToString()), 
                                   ColumnName =
                                       dgvRow.Cells["dgvc_MappedColumnName"].Value
                                       .ToString()
@@ -303,25 +308,25 @@ namespace Bechtle.FillablePdfDestination
         /// </returns>
         private List<ComponentConfiguration.FieldDataSet> GetFieldDataFromFile()
         {
-            //Creates an Instance of the PdfReaderClass which reads from the template selected by the user
+            // Creates an Instance of the PdfReaderClass which reads from the template selected by the user
             var pr = new PdfReader(this.componentConfiguration.TemplatePath);
             var fieldDataSetsFromFile = new List<ComponentConfiguration.FieldDataSet>();
 
-            //Loops over all fillable fields in the pdf gathering their Data and saving it to FieldDatasets
+            // Loops over all fillable fields in the pdf gathering their Data and saving it to FieldDatasets
             foreach (var v in pr.AcroFields.Fields)
             {
                 var dataSet = new ComponentConfiguration.FieldDataSet(
-                    v.Key,
-                    pr.AcroFields.GetFieldType(v.Key),
-                    "Egal",
-                    "--",
+                    v.Key, 
+                    pr.AcroFields.GetFieldType(v.Key), 
+                    "Egal", 
+                    "--", 
                     string.Empty);
                 fieldDataSetsFromFile.Add(dataSet);
             }
 
             pr.Close();
 
-            //If there was no fillable field found, a warning is displayed
+            // If there was no fillable field found, a warning is displayed
             if (fieldDataSetsFromFile.Count == 0)
             {
                 MessageBox.Show("This template doesn't contain any fillable fields");
@@ -331,13 +336,13 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        ///     Called, when the button "Template" is clicked
+        /// Called, when the button "Template" is clicked
         /// </summary>
         /// <param name="sender">
-        ///     The sender.
+        /// The sender.
         /// </param>
         /// <param name="e">
-        ///     The e.
+        /// The e.
         /// </param>
         private void btnTemplate_Click(object sender, EventArgs e)
         {
@@ -347,118 +352,120 @@ namespace Bechtle.FillablePdfDestination
             // Checks if the selected template exist
             if (this.dialogTemplate.CheckFileExists)
             {
-                //Sets text in the corresponding label to selected filePath;
+                // Sets text in the corresponding label to selected filePath;
                 this.lblTemplate.Text = this.dialogTemplate.FileName;
 
-                //Updates configuration
+                // Updates configuration
                 this.componentConfiguration = this.UpdateConfigFromUI();
 
-                //sets configurations fieldDataset from the selectedTemplate
+                // sets configurations fieldDataset from the selectedTemplate
                 this.componentConfiguration.FieldDataSets = this.GetFieldDataFromFile();
-                //Rebuilds the form
+
+                // Rebuilds the form
                 this.BuildForm();
             }
         }
 
         /// <summary>
-        ///     Called when the folder-button is clicked
+        /// Called when the folder-button is clicked
         /// </summary>
         /// <param name="sender">
-        ///     The sender.
+        /// The sender.
         /// </param>
         /// <param name="e">
-        ///     The e.
+        /// The e.
         /// </param>
         private void btnFolder_Click(object sender, EventArgs e)
         {
-            //Shows FolderBrowser dialogFolder
+            // Shows FolderBrowser dialogFolder
             this.dialogFolder.ShowDialog();
 
-            //If the folder is a valid folderPath
+            // If the folder is a valid folderPath
             if (!string.IsNullOrEmpty(this.dialogFolder.SelectedPath))
             {
-                //Sets text in the corresponding label to the selected path
+                // Sets text in the corresponding label to the selected path
                 this.lblFolder.Text = this.dialogFolder.SelectedPath;
 
-                //Updates configuration
+                // Updates configuration
                 this.componentConfiguration = this.UpdateConfigFromUI();
 
-                //Rebuilds the form
+                // Rebuilds the form
                 this.BuildForm();
             }
         }
 
         /// <summary>
-        ///     Called when the Name-Format button is clicked
+        /// Called when the Name-Format button is clicked
         /// </summary>
         /// <param name="sender">
-        ///     The sender.
+        /// The sender.
         /// </param>
         /// <param name="e">
-        ///     The e.
+        /// The e.
         /// </param>
         private void btnName_Click(object sender, EventArgs e)
         {
-            //Instanciates and displays new NameBuilderForm
+            // Instanciates and displays new NameBuilderForm
             var nameBuilderForm = new NameBuilderForm(this.inputColumnInfos.ToList(), this.componentConfiguration);
             nameBuilderForm.ShowDialog(this);
 
-            //Sets text in the corresponding label to the FormatString returned by the Form
-
+            // Sets text in the corresponding label to the FormatString returned by the Form
             this.lblNameBuilder.Text = this.componentConfiguration.FormatString;
 
-            //Updates configuration
+            // Updates configuration
             this.componentConfiguration = this.UpdateConfigFromUI();
 
-            //Rebuilds the form
+            // Rebuilds the form
             this.BuildForm();
         }
 
         /// <summary>
-        ///     Called when the form is loaded
+        /// Called when the form is loaded
         /// </summary>
         /// <param name="sender">
-        ///     The sender.
+        /// The sender.
         /// </param>
         /// <param name="e">
-        ///     The e.
+        /// The e.
         /// </param>
         private void FillablePdfDestinationUIForm_Load(object sender, EventArgs e)
         {
-            //Builds the form for the first time
+            // Builds the form for the first time
             this.BuildForm();
         }
 
         /// <summary>
-        ///     Called when OK is clicked
+        /// Called when OK is clicked
         /// </summary>
         /// <param name="sender">
-        ///     The sender.
+        /// The sender.
         /// </param>
         /// <param name="e">
-        ///     The e.
+        /// The e.
         /// </param>
         private void btnOK_Click(object sender, EventArgs e)
         {
-            //Updates configuration (to be sure)
+            // Updates configuration (to be sure)
             this.componentConfiguration = this.UpdateConfigFromUI();
 
-            //Serializes the current configuration to a JsonString
+            // Serializes the current configuration to a JsonString
             this.OutputConfigJsonString = this.componentConfiguration.ToJsonString();
-            //Sets DialogResult to "OK";
+
+            // Sets DialogResult to "OK";
             this.DialogResult = DialogResult.OK;
-            //Disposes the form
+
+            // Disposes the form
             this.Dispose();
         }
 
         /// <summary>
-        ///     Called when the Cancel-Button is clicked, closes the form and discards all settings made
+        /// Called when the Cancel-Button is clicked, closes the form and discards all settings made
         /// </summary>
         /// <param name="sender">
-        ///     The sender.
+        /// The sender.
         /// </param>
         /// <param name="e">
-        ///     The e.
+        /// The e.
         /// </param>
         private void btnCancel_Click(object sender, EventArgs e)
         {

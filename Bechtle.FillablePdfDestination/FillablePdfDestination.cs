@@ -24,7 +24,7 @@ namespace Bechtle.FillablePdfDestination
     ///     Main Class, Implementing Methods of the Pipeline-Component Interface
     /// </summary>
     [DtsPipelineComponent(ComponentType = ComponentType.DestinationAdapter, 
-        DisplayName = "Bechtle FillablePdfDestination", IconResource = "Bechtle.FillablePdfDestination.pdfforge.ico", 
+        DisplayName = "Bechtle FillablePdfDestination", IconResource = "Bechtle.FillablePdfDestination.Icon_Stack_V4.ico", 
         Description = "Creates PDFs writing input Data to fields defined by a fillable pdf-Template and another Test", 
         UITypeName =
             "Bechtle.FillablePdfDestination.FillablePdfDestinationUI, Bechtle.FillablePdfDestination, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9f75f02631159792"
@@ -40,11 +40,6 @@ namespace Bechtle.FillablePdfDestination
         ///     Contains all the user-defined settings of the component (see Component-Configuration)
         /// </summary>
         private ComponentConfiguration config;
-
-        /// <summary>
-        ///     (not Used) Number of the processed rows
-        /// </summary>
-        private int rowCount;
 
         /// <summary>
         ///     Writer to Debug-Txt
@@ -71,6 +66,7 @@ namespace Bechtle.FillablePdfDestination
             // Input
             var input = this.ComponentMetaData.InputCollection.New();
             input.Name = "Input";
+            input.HasSideEffects = true;
 
             // This property contains all settings set from the UI, safed in a single JSON-String
             var settings = this.ComponentMetaData.CustomPropertyCollection.New();
@@ -108,11 +104,10 @@ namespace Bechtle.FillablePdfDestination
             Stream debugFileStream = new FileStream(debugFilePath, FileMode.Create);
             this.streamWriterDebug = new StreamWriter(debugFileStream);
 
-            
             // Mapps the name of each input-column to it's assigned bufferID for easier access during processing the input-data
             this.bufferIdByColumnName = new Dictionary<string, int>();
             this.bufferIdByColumnName = new Dictionary<string, int>();
-            this.rowCount = 0;
+ 
 
             foreach (IDTSInputColumn100 inputColumn100 in input.InputColumnCollection)
             {
@@ -127,7 +122,7 @@ namespace Bechtle.FillablePdfDestination
             // The default PreExecute-Method of Pipeline-Component is called to round up the preparation
             base.PreExecute();
         }
-
+        
         /// <summary>
         /// Design-time method: Is called when a upstream dataflow-component is connected
         /// </summary>
@@ -320,7 +315,7 @@ namespace Bechtle.FillablePdfDestination
 
                 try
                 {
-                    //Instanciates a new PdfStamper to fill the fields in the template
+                    // Creates a new instance of PdfStamper to fill the fields in the template
                     var stamper = new PdfStamper(
                         new PdfReader(this.config.TemplatePath), 
                         new FileStream(fileName, FileMode.Create));
