@@ -99,10 +99,10 @@ namespace Bechtle.FillablePdfDestination
         }
 
         /// <summary>
-        /// The delete.
+        /// Called when the component is removed from the Dataflow (not implemented)
         /// </summary>
         /// <param name="parentWindow">
-        /// The parent window.
+        /// Not implemented
         /// </param>
         public void Delete(IWin32Window parentWindow)
         {

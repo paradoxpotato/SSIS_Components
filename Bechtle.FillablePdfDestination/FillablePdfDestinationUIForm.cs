@@ -378,7 +378,7 @@ namespace Bechtle.FillablePdfDestination
         private void btnFolder_Click(object sender, EventArgs e)
         {
             // Shows FolderBrowser dialogFolder
-            this.dialogFolder.ShowDialog();
+            this.dialogFolder.ShowDialog(this);
 
             // If the folder is a valid folderPath
             if (!string.IsNullOrEmpty(this.dialogFolder.SelectedPath))
@@ -407,6 +407,7 @@ namespace Bechtle.FillablePdfDestination
         {
             // Instanciates and displays new NameBuilderForm
             var nameBuilderForm = new NameBuilderForm(this.inputColumnInfos.ToList(), this.componentConfiguration);
+            
             nameBuilderForm.ShowDialog(this);
 
             // Sets text in the corresponding label to the FormatString returned by the Form

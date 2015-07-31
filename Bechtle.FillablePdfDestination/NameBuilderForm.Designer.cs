@@ -133,8 +133,9 @@
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.textBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "NameBuilderForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "NameBuilder";
             this.Load += new System.EventHandler(this.NameBuilderForm_Load);
             this.ResumeLayout(false);

@@ -14,6 +14,7 @@ namespace Bechtle.FillablePdfDestination
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Windows.Forms;
 
     using iTextSharp.text.pdf;
 
@@ -51,6 +52,8 @@ namespace Bechtle.FillablePdfDestination
         /// </summary>
         private StreamWriter streamWriterResult;
 
+        private string[] nameElements;
+
         /// <summary>
         ///     Overrides Provide Component-Properties method of the Pipeline-Component-Class and
         ///     Provides Input, Output and User-Defined properties used by the Pipeline-Component
@@ -73,7 +76,7 @@ namespace Bechtle.FillablePdfDestination
             settings.Name = "Settings";
 
             // As the user should not create an invalid Json-String, this property is made invisible
-            settings.TypeConverter = "NOTBROWSABLE";
+            /*settings.TypeConverter = "NOTBROWSABLE";*/
         }
 
         /// <summary>
@@ -104,8 +107,11 @@ namespace Bechtle.FillablePdfDestination
             Stream debugFileStream = new FileStream(debugFilePath, FileMode.Create);
             this.streamWriterDebug = new StreamWriter(debugFileStream);
 
+            string s = this.config.FormatString;
+            this.nameElements = s.Split(new[] { "%" }, StringSplitOptions.RemoveEmptyEntries);
+            
+
             // Mapps the name of each input-column to it's assigned bufferID for easier access during processing the input-data
-            this.bufferIdByColumnName = new Dictionary<string, int>();
             this.bufferIdByColumnName = new Dictionary<string, int>();
  
 
@@ -122,7 +128,8 @@ namespace Bechtle.FillablePdfDestination
             // The default PreExecute-Method of Pipeline-Component is called to round up the preparation
             base.PreExecute();
         }
-        
+
+
         /// <summary>
         /// Design-time method: Is called when a upstream dataflow-component is connected
         /// </summary>
@@ -148,6 +155,7 @@ namespace Bechtle.FillablePdfDestination
             }
         }
 
+
         /// <summary>
         ///     runtime/design-Time method: Validates the component after each change to find errors which would prevent the
         ///     dataflow from being executed
@@ -165,17 +173,21 @@ namespace Bechtle.FillablePdfDestination
             if (value == null)
             {
                 this.ComponentMetaData.FireError(
-                    0, 
-                    this.ComponentMetaData.Name, 
-                    "The component is not configured!", 
-                    string.Empty, 
-                    0, 
+                    0,
+                    this.ComponentMetaData.Name,
+                    "The component is not configured!",
+                    string.Empty,
+                    0,
                     out pbCancel);
                 return DTSValidationStatus.VS_NEEDSNEWMETADATA;
             }
 
             // Checks if all columns to read are present in the components InputColumnCollection
             cfg = ComponentConfiguration.CreateFromJson(value.ToString());
+            
+            string[] nameElements = cfg.FormatString.Split(new[] { "%" }, StringSplitOptions.RemoveEmptyEntries);
+           
+
 
             var inputColumns = this.ComponentMetaData.InputCollection[0].InputColumnCollection;
 
@@ -194,8 +206,7 @@ namespace Bechtle.FillablePdfDestination
                         out pbCancel);
                     return DTSValidationStatus.VS_NEEDSNEWMETADATA;
                 }
-            }
-
+            }            
             // Checks if exacly one input is attached to the component
             if (this.ComponentMetaData.InputCollection.Count != 1)
             {
@@ -229,130 +240,158 @@ namespace Bechtle.FillablePdfDestination
             // While there are still rows in the Buffer...
             while (buffer.NextRow())
             {
-                // Tires to convert the value of each column in the current buffer to a string and writes it into an array to avoid to access the buffer twice, decreasing the performance
-                var valuesById = new string[buffer.ColumnCount];
-                for (var i = 0; i < valuesById.Length; i++)
+                // Tries to convert the value of each column in the current buffer to a string and writes it into an array to avoid to access the buffer twice, decreasing the performance
+                try
                 {
-                    var o = buffer[i];
-
-                    // Default value in the array is an empty string
-                    valuesById[i] = string.Empty;
-
-                    // If the column-value is not null, it is converted to a string and writen to the array
-                    if (o != null)
+                    var valuesById = new string[buffer.ColumnCount];
+                    for (var i = 0; i < valuesById.Length; i++)
                     {
-                        valuesById[i] = o.ToString();
+                        var o = buffer[i];
+
+                        // Default value in the array is an empty string
+                        valuesById[i] = string.Empty;
+
+                        // If the column-value is not null, it is converted to a string and writen to the array
+                        if (o != null)
+                        {
+                            valuesById[i] = o.ToString();
+                        }
                     }
-                }
 
-                // Creates the name of the output-file from the newly-created string-array containing the buffer data and the component-configuration's formatString
+                    // Creates the name of the output-file from the newly-created string-array containing the buffer data and the component-configuration's formatString
 
-                // The ComponentConfiguration's Format string is split into it's name-elements
-                var s = this.config.FormatString;
-                var nameElements = s.Split(new[] { "%" }, StringSplitOptions.RemoveEmptyEntries);
-                var fileName = string.Empty;
-                foreach (var nameElement in nameElements)
-                {
-                    // '#' in a nameElement implies, that this nameElement is a columnName
-                    if (nameElement.Contains("#"))
+                    // The ComponentConfiguration's Format string is split into it's name-elements
+
+                    string fileName = string.Empty;
+                    foreach (var nameElement in nameElements)
                     {
-                        var columnName = Regex.Replace(nameElement, "#", string.Empty);
+                        // '#' in a nameElement implies, that this nameElement is a columnName
+                        if (nameElement.Contains("#"))
+                        {
+                            var columnName = Regex.Replace(nameElement, "#", string.Empty);
 
-                        var bufferId = this.bufferIdByColumnName[columnName];
+                            int bufferId = -1;
 
-                        // The value of the buffer-column cached in the string-array is accessed by the BufferID and appended to the fileName;
-                        fileName = fileName.Insert(fileName.Length, valuesById[bufferId]);
+                            try
+                            {
+                                bufferId = this.bufferIdByColumnName[columnName];
+                            }
+                            catch
+                            {
+                                
+                            }
+                            
+
+                            if (bufferId != -1)
+                            {
+                                fileName = fileName.Insert(fileName.Length, valuesById[bufferId]);
+                            }
+
+                            // The value of the buffer-column cached in the string-array is accessed by the BufferID and appended to the fileName;
+                            fileName = fileName.Insert(fileName.Length, string.Empty);
+                        }
+                        else
+                        {
+                            // If there's no '#' the value of the nameElement is appended to the fileName:
+                            fileName = fileName.Insert(fileName.Length, nameElement);
+                        }
+                    }
+
+                    // Completes the files path by adding the ".pdf"-extension and the user-set folderPath;
+                    fileName = fileName.Insert(fileName.Length, ".pdf");
+                    fileName = fileName.Insert(0, this.config.FolderPath + @"\");
+
+                    // Checks if the generated fileName is valid and unique
+                    var fileNameIsValid = false;
+                    FileInfo fileInfo = null;
+                    try
+                    {
+                        if (File.Exists(fileName))
+                        {
+                            this.streamWriterDebug.WriteLine("File " + fileName + " already exists!");
+                            throw new NotSupportedException();
+                        }
+
+                        fileInfo = new FileInfo(fileName);
+                    }
+                    catch (ArgumentException)
+                    {
+                    }
+                    catch (PathTooLongException)
+                    {
+                    }
+                    catch (NotSupportedException)
+                    {
+                    }
+
+                    if (fileInfo == null)
+                    {
+                        this.streamWriterDebug.WriteLine("Filepath " + fileName + " is not valid!");
                     }
                     else
                     {
-                        // If there's no '#' the value of the nameElement is appended to the fileName:
-                        fileName = fileName.Insert(fileName.Length, nameElement);
-                    }
-                }
-
-                // Completes the files path by adding the ".pdf"-extension and the user-set folderPath;
-                fileName = fileName.Insert(fileName.Length, ".pdf");
-                fileName = fileName.Insert(0, this.config.FolderPath + @"\");
-
-                // Checks if the generated fileName is valid and unique
-                var fileNameIsValid = false;
-                FileInfo fileInfo = null;
-                try
-                {
-                    if (File.Exists(fileName))
-                    {
-                        this.streamWriterDebug.WriteLine("File " + fileName + " already exists!");
-                        throw new NotSupportedException();
+                        this.streamWriterDebug.WriteLine(fileName);
+                        fileNameIsValid = true;
                     }
 
-                    fileInfo = new FileInfo(fileName);
-                }
-                catch (ArgumentException)
-                {
-                }
-                catch (PathTooLongException)
-                {
-                }
-                catch (NotSupportedException)
-                {
-                }
-
-                if (fileInfo == null)
-                {
-                    this.streamWriterDebug.WriteLine("Filepath " + fileName + " is not valid!");
-                }
-                else
-                {
-                    this.streamWriterDebug.WriteLine(fileName);
-                    fileNameIsValid = true;
-                }
-
-                if (!fileNameIsValid)
-                {
-                    // If the fileName is not valid, no other steps are made;
-                    continue;
-                }
-
-                try
-                {
-                    // Creates a new instance of PdfStamper to fill the fields in the template
-                    var stamper = new PdfStamper(
-                        new PdfReader(this.config.TemplatePath), 
-                        new FileStream(fileName, FileMode.Create));
-
-                    // Loops over each fieldDataSet in the config's components fieldDataset-collection
-                    foreach (var fieldDataSet in this.config.FieldDataSets)
+                    if (!fileNameIsValid)
                     {
-                        // Gets the bufferID of  the column mapped to the fillable field in the template
-                        var bufferId = this.bufferIdByColumnName[fieldDataSet.ColumnName];
-                        var value = string.Empty;
-                        if (bufferId != -1)
+                        // If the fileName is not valid, no other steps are made;
+                        continue;
+                    }
+                    try
+                    {
+                        // Creates a new instance of PdfStamper to fill the fields in the template
+                        var stamper = new PdfStamper(
+                            new PdfReader(this.config.TemplatePath),
+                            new FileStream(fileName, FileMode.Create));
+
+                        // Loops over each fieldDataSet in the config's components fieldDataset-collection
+                        foreach (var fieldDataSet in this.config.FieldDataSets)
                         {
-                            // The value of the buffer-column cached in the string-array is accessed by the BufferID and safed to temporary variable 
-                            value = valuesById[bufferId];
-
-                            // iTextsharp Field-Types "Checkbox" and "Pushbutton" need the strings "Yes" or "No" to check or uncheck template-fields. Because of this "True" and "False" have to be converted
-                            if (fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_CHECKBOX)
-                                | fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_PUSHBUTTON))
+                            // Gets the bufferID of  the column mapped to the fillable field in the template
+                            int bufferID = -1;
+                            try
                             {
-                                value = value.Equals("True") ? "Yes" : "No";
+                                bufferID = this.bufferIdByColumnName[fieldDataSet.ColumnName];
                             }
+                            catch {
+                            }
+
+                            var value = string.Empty;
+                            if (bufferID != -1)
+                            {
+                                // The value of the buffer-column cached in the string-array is accessed by the BufferID and safed to temporary variable 
+                                value = valuesById[bufferID];
+
+                                // iTextsharp Field-Types "Checkbox" and "Pushbutton" need the strings "Yes" or "No" to check or uncheck template-fields. Because of this "True" and "False" have to be converted
+                                if (fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_CHECKBOX)
+                                    | fieldDataSet.FieldTypeId.Equals(AcroFields.FIELD_TYPE_PUSHBUTTON))
+                                {
+                                    value = value.Equals("True") ? "Yes" : "No";
+                                }
+                            }
+
+                            // Writes value to the field in the template assigned to the fieldDatasets fieldName;
+                            stamper.AcroFields.SetField(fieldDataSet.FieldName, value);
                         }
 
-                        // Writes value to the field in the template assigned to the fieldDatasets fieldName;
-                        stamper.AcroFields.SetField(fieldDataSet.FieldName, value);
+                        // Closes the Pdf.Stamper
+                        stamper.Close();
                     }
-
-                    // Closes the Pdf.Stamper
-                    stamper.Close();
+                    catch (Exception exception)
+                    {
+                        // If any error happens (for example while filling the form), the  occuring exception is caught and the fileName and the corresponding errorMEssage is written to the debug file
+                        this.streamWriterDebug.WriteLine("Error while creating file " + fileName);
+                        this.streamWriterDebug.WriteLine(exception.Message);
+                    }
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    // If any error happens (for example while filling the form), the  occuring exception is caught and the fileName and the corresponding errorMEssage is written to the debug file
-                    this.streamWriterDebug.WriteLine("Error while creating file " + fileName);
-                    this.streamWriterDebug.WriteLine(exception.Message);
+                    this.streamWriterDebug.WriteLine(ex.TargetSite);
                 }
             }
+
         }
 
         /// <summary>
